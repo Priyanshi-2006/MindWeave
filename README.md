@@ -131,6 +131,6 @@ src/
 
 ## 👩‍💻 Built By
 
-**Priyanshi** — for Smart India Hackathon (SIH) 2025
+**TEAM:MIND-WEAVE** — for Smart India Hackathon (SIH) 2026
 
 > MindWeave adapts to every child's unique cognitive fingerprint, making learning feel like play.
