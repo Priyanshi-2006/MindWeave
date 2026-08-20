@@ -162,14 +162,14 @@ function SpotGame() {
   const expected = total * 9 + 6;
 
   const finish = useCallback(
-    (completed: boolean, foundCount: number) => {
+    async (completed: boolean, foundCount: number) => {
       if (result) return;
       const time = (Date.now() - startRef.current) / 1000;
       const accuracy = total ? foundCount / total : 0;
       const avgReaction = clickTimes.current.length
         ? time / clickTimes.current.length
         : time;
-      const res = submitRound(
+      const res = await submitRound(
         "spot",
         {
           accuracy,

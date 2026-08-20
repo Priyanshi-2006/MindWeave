@@ -168,12 +168,12 @@ function MazeGame() {
   const startRef = useRef(Date.now());
 
   const finish = useCallback(
-    (completed: boolean) => {
+    async (completed: boolean) => {
       if (result) return;
       const time = (Date.now() - startRef.current) / 1000;
       const actual = Math.max(1, moves);
       const efficiency = Math.min(1, (optimal.length - 1) / actual);
-      const res = submitRound(
+      const res = await submitRound(
         "maze",
         {
           accuracy: completed ? Math.max(0.35, efficiency) : efficiency * 0.4,

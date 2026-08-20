@@ -154,7 +154,7 @@ function DetectiveGame() {
   const expected = kase.clues.length * 9 + 12;
 
   const submit = useCallback(
-    (choice: string) => {
+    async (choice: string) => {
       setAnswer(choice);
       const correct = choice === kase.culprit;
       const nextAttempts = attempts + 1;
@@ -169,7 +169,7 @@ function DetectiveGame() {
       const accuracy = correct
         ? 0.7 + 0.3 * cluePrecision
         : 0.2 * cluePrecision;
-      const res = submitRound(
+      const res = await submitRound(
         "detective",
         {
           accuracy,
