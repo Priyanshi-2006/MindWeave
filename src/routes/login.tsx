@@ -28,10 +28,7 @@ function LoginPage() {
     password?: boolean;
   }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState<{
-    type: "success" | "error";
-    text: string;
-  } | null>(null);
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   // Client-side validation checks
   const identifierError =
@@ -48,6 +45,18 @@ function LoginPage() {
 
   const isFormValid = identifier.trim().length > 0 && password.length >= 6;
 
+  const handleIdentifierChange = (val: string) => {
+    setIdentifier(val);
+    if (loginSuccess) setLoginSuccess(false);
+    if (!touched.identifier) setTouched((t) => ({ ...t, identifier: true }));
+  };
+
+  const handlePasswordChange = (val: string) => {
+    setPassword(val);
+    if (loginSuccess) setLoginSuccess(false);
+    if (!touched.password) setTouched((t) => ({ ...t, password: true }));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setTouched({ identifier: true, password: true });
@@ -57,7 +66,6 @@ function LoginPage() {
     }
 
     setIsLoading(true);
-    setStatusMessage(null);
 
     try {
       // NOTE: Frontend scaffold. Backend authentication API integration will connect here.
@@ -67,17 +75,11 @@ function LoginPage() {
       });
 
       // Simulate brief network feedback
-      await new Promise((resolve) => setTimeout(resolve, 600));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      setStatusMessage({
-        type: "success",
-        text: "Login submitted successfully! Backend authentication will connect here.",
-      });
+      setLoginSuccess(true);
     } catch (err) {
-      setStatusMessage({
-        type: "error",
-        text: "Failed to sign in. Please check your credentials and try again.",
-      });
+      setLoginSuccess(false);
     } finally {
       setIsLoading(false);
     }
@@ -155,18 +157,14 @@ function LoginPage() {
           </p>
         </div>
 
-        {/* Status Message / Feedback */}
-        {statusMessage ? (
+        {/* Success Alert: Rendered ONLY when loginSuccess is true */}
+        {loginSuccess ? (
           <div
-            className={`mb-5 rounded-xl border-2 p-3 text-xs sm:text-sm font-semibold transition-all ${
-              statusMessage.type === "success"
-                ? "border-success/40 bg-success/15 text-foreground"
-                : "border-destructive/40 bg-destructive/15 text-destructive"
-            }`}
+            className="mb-5 rounded-xl border-2 border-success/40 bg-success/15 p-3 text-xs sm:text-sm font-semibold text-foreground animate-pop"
             role="alert"
           >
-            {statusMessage.type === "success" ? "✅ " : "⚠️ "}
-            {statusMessage.text}
+            ✅ Login submitted successfully! Backend authentication will connect
+            here.
           </div>
         ) : null}
 
@@ -186,11 +184,7 @@ function LoginPage() {
               type="text"
               autoComplete="username"
               value={identifier}
-              onChange={(e) => {
-                setIdentifier(e.target.value);
-                if (!touched.identifier)
-                  setTouched((t) => ({ ...t, identifier: true }));
-              }}
+              onChange={(e) => handleIdentifierChange(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, identifier: true }))}
               placeholder="e.g. player@mindweave.app"
               aria-invalid={!!identifierError}
@@ -241,11 +235,7 @@ function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (!touched.password)
-                    setTouched((t) => ({ ...t, password: true }));
-                }}
+                onChange={(e) => handlePasswordChange(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, password: true }))}
                 placeholder="••••••••"
                 aria-invalid={!!passwordError}
