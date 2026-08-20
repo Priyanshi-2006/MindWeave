@@ -1,9 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AppShell } from "@/components/intelliplay/shell";
 import { useProfile } from "@/lib/intelliplay/store";
 import { CHARACTERS } from "@/lib/intelliplay/avatars";
-import { BONUS_EMOJI, BONUS_LABELS, SKILLS, type SkillKey } from "@/lib/intelliplay/types";
+import {
+  BONUS_EMOJI,
+  BONUS_LABELS,
+  SKILLS,
+  type SkillKey,
+} from "@/lib/intelliplay/types";
 import { clamp } from "@/lib/intelliplay/engine";
 import { evaluateBonus, todayKey } from "@/lib/intelliplay/bonus";
 
@@ -16,7 +21,10 @@ export const Route = createFileRoute("/")({
         content:
           "MindWeave learns how your child thinks and adapts four cognitive games — maze, spot the difference, memory and detective — to their exact challenge zone.",
       },
-      { property: "og:title", content: "MindWeave — Adaptive Cognitive Games for Kids" },
+      {
+        property: "og:title",
+        content: "MindWeave — Adaptive Cognitive Games for Kids",
+      },
       {
         property: "og:description",
         content:
@@ -28,13 +36,28 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { profile, ready } = useProfile();
+  const { profile, ready, isAuthenticated } = useProfile();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (ready && !isAuthenticated) {
+      navigate({ to: "/login" });
+    }
+  }, [ready, isAuthenticated, navigate]);
+
   if (!ready)
     return (
       <AppShell>
-        <div className="panel p-8 text-center">Loading…</div>
+        <div className="panel p-8 text-center font-display text-lg font-bold">
+          Loading MindWeave…
+        </div>
       </AppShell>
     );
+
+  if (!isAuthenticated) {
+    return null;
+  }
+
   if (!profile)
     return (
       <AppShell>
@@ -70,17 +93,24 @@ function CreateProfile() {
           not the other way round.
         </h1>
         <p className="mt-4 max-w-md text-lg text-muted-foreground">
-          MindWeave watches how your child plays four cognitive games, builds a living profile of
-          their strengths, and tunes every next challenge to keep them in the perfect learning zone.
+          MindWeave watches how your child plays four cognitive games, builds a
+          living profile of their strengths, and tunes every next challenge to
+          keep them in the perfect learning zone.
         </p>
         <div className="mt-6 flex flex-wrap gap-2 text-sm font-bold">
-          {["🧭 Maze Escape", "👀 Spot the Difference", "🎵 Simon Says", "🔎 Mini Detective"].map(
-            (g) => (
-              <span key={g} className="rounded-full bg-card px-4 py-2 shadow-soft">
-                {g}
-              </span>
-            ),
-          )}
+          {[
+            "🧭 Maze Escape",
+            "👀 Spot the Difference",
+            "🎵 Simon Says",
+            "🔎 Mini Detective",
+          ].map((g) => (
+            <span
+              key={g}
+              className="rounded-full bg-card px-4 py-2 shadow-soft"
+            >
+              {g}
+            </span>
+          ))}
         </div>
         <div className="mt-8 flex items-end gap-1">
           {CHARACTERS.map((c, i) => (
@@ -106,7 +136,9 @@ function CreateProfile() {
         }}
         className="panel animate-pop h-fit space-y-4 p-6"
       >
-        <h2 className="font-display text-2xl font-bold">Create a child profile</h2>
+        <h2 className="font-display text-2xl font-bold">
+          Create a child profile
+        </h2>
         <div className="flex items-center gap-3">
           <img
             src={preview}
@@ -126,7 +158,13 @@ function CreateProfile() {
                   avatar === c.id ? "border-primary" : "border-transparent"
                 }`}
               >
-                <img src={c.src} alt={c.label} width={40} height={40} className="size-9" />
+                <img
+                  src={c.src}
+                  alt={c.label}
+                  width={40}
+                  height={40}
+                  className="size-9"
+                />
               </button>
             ))}
             <label className="toy-press grid size-12 cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-border text-lg">
@@ -195,7 +233,8 @@ const QUESTIONS: Q[] = [
     skill: "logicalReasoning",
   },
   {
-    prompt: "You must reach the door. Two paths: one has 3 turns, one has 7. Which is quicker?",
+    prompt:
+      "You must reach the door. Two paths: one has 3 turns, one has 7. Which is quicker?",
     options: ["3 turns", "7 turns", "Same"],
     answer: 0,
     skill: "spatialReasoning",
@@ -276,7 +315,9 @@ function Assessment() {
           <p className="animate-pop font-display text-5xl font-bold tracking-widest">
             {q!.reveal}
           </p>
-          <p className="text-xs text-muted-foreground">It will disappear in a moment…</p>
+          <p className="text-xs text-muted-foreground">
+            It will disappear in a moment…
+          </p>
         </div>
       ) : (
         /* ── Phase 2: show the question and options ── */
@@ -382,13 +423,16 @@ function Hub() {
       {showBonusBanner ? (
         <div className="panel animate-pop mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 p-6 bg-gradient-to-r from-primary/15 via-accent/15 to-card border-2 border-primary/40 shadow-toy">
           <div className="flex items-center gap-3">
-            <span className="text-4xl sm:text-5xl">{BONUS_EMOJI[offer.game]}</span>
+            <span className="text-4xl sm:text-5xl">
+              {BONUS_EMOJI[offer.game]}
+            </span>
             <div>
               <h2 className="font-display text-2xl font-bold text-primary">
                 🎉 Brain Boost Unlocked!
               </h2>
               <p className="text-sm font-semibold text-foreground">
-                You've mastered today's games! {BONUS_LABELS[offer.game]} is ready for you.
+                You've mastered today's games! {BONUS_LABELS[offer.game]} is
+                ready for you.
               </p>
             </div>
           </div>
@@ -441,7 +485,9 @@ function Hub() {
             />
             <span className="text-5xl">{g.emoji}</span>
             <h2 className="mt-2 font-display text-2xl font-bold">{g.title}</h2>
-            <p className="max-w-[70%] text-sm text-muted-foreground">{g.desc}</p>
+            <p className="max-w-[70%] text-sm text-muted-foreground">
+              {g.desc}
+            </p>
             <p className="mt-4 inline-block rounded-full bg-muted/70 px-3 py-1 text-xs font-bold">
               {summary(g.to)}
             </p>

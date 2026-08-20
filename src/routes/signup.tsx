@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { useProfile } from "@/lib/intelliplay/store";
 import logoImg from "@/assets/logo.png";
 import foxImg from "@/assets/char-fox.png";
 import catImg from "@/assets/char-cat.png";
@@ -21,6 +22,8 @@ export const Route = createFileRoute("/signup")({
 });
 
 function SignUpPage() {
+  const { signup } = useProfile();
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -119,9 +122,11 @@ function SignUpPage() {
       });
 
       // Simulate brief network feedback
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
+      signup(fullName.trim(), identifier.trim());
       setSignupSuccess(true);
+      navigate({ to: "/login" });
     } catch (err) {
       setSignupSuccess(false);
     } finally {

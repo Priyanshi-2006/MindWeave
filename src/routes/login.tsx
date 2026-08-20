@@ -1,5 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { useProfile } from "@/lib/intelliplay/store";
 import logoImg from "@/assets/logo.png";
 import foxImg from "@/assets/char-fox.png";
 import catImg from "@/assets/char-cat.png";
@@ -20,6 +21,8 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
+  const { login } = useProfile();
+  const navigate = useNavigate();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -75,9 +78,11 @@ function LoginPage() {
       });
 
       // Simulate brief network feedback
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 400));
 
+      login(identifier.trim());
       setLoginSuccess(true);
+      navigate({ to: "/" });
     } catch (err) {
       setLoginSuccess(false);
     } finally {
