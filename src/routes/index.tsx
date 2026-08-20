@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppShell } from "@/components/intelliplay/shell";
 import { useProfile } from "@/lib/intelliplay/store";
 import { CHARACTERS } from "@/lib/intelliplay/avatars";
@@ -57,7 +57,7 @@ function Home() {
 function CreateProfile() {
   const { start } = useProfile();
   const [name, setName] = useState("");
-  const [age, setAge] = useState(8);
+  const [age, setAge] = useState(9);
   const [avatar, setAvatar] = useState<string>("fox");
   const preview = CHARACTERS.find((c) => c.id === avatar)?.src ?? avatar;
 
@@ -159,8 +159,8 @@ function CreateProfile() {
           Age: {age}
           <input
             type="range"
-            min={4}
-            max={14}
+            min={9}
+            max={15}
             value={age}
             onChange={(e) => setAge(Number(e.target.value))}
             className="mt-2 w-full accent-[var(--primary)]"
@@ -179,7 +179,14 @@ function CreateProfile() {
 
 /* ---------------- Initial assessment ---------------- */
 
-type Q = { prompt: string; options: string[]; answer: number; skill: SkillKey };
+type Q = {
+  prompt: string;
+  /** If set, the user first sees `reveal` for a moment, then `prompt` appears. */
+  reveal?: string;
+  options: string[];
+  answer: number;
+  skill: SkillKey;
+};
 const QUESTIONS: Q[] = [
   {
     prompt: "Which shape comes next?  ▲ ● ▲ ● ▲ __",
@@ -200,7 +207,8 @@ const QUESTIONS: Q[] = [
     skill: "visualAttention",
   },
   {
-    prompt: "Remember: 3 · 7 · 1. What was the middle number?",
+    reveal: "3 · 7 · 1",
+    prompt: "What was the middle number?",
     options: ["3", "7", "1"],
     answer: 1,
     skill: "workingMemory",
@@ -218,15 +226,29 @@ function Assessment() {
   const [step, setStep] = useState(0);
   const [score, setScore] = useState<Record<string, boolean>>({});
   const [startedAt] = useState(Date.now());
+  const [revealing, setRevealing] = useState<boolean>(!!QUESTIONS[0]?.reveal);
 
   const q = QUESTIONS[step];
+
+  // When the step changes, check if the new question has a reveal phase.
+  const startStep = (newStep: number) => {
+    setStep(newStep);
+    setRevealing(!!QUESTIONS[newStep]?.reveal);
+  };
+
+  // Auto-dismiss the reveal after 2.5 s.
+  useEffect(() => {
+    if (!revealing) return;
+    const id = setTimeout(() => setRevealing(false), 2500);
+    return () => clearTimeout(id);
+  }, [revealing, step]);
 
   const answer = (i: number) => {
     const correct = i === q!.answer;
     const next = { ...score, [q!.skill]: correct };
     setScore(next);
     if (step + 1 < QUESTIONS.length) {
-      setStep(step + 1);
+      startStep(step + 1);
       return;
     }
     const seconds = (Date.now() - startedAt) / 1000;
@@ -245,18 +267,34 @@ function Assessment() {
       <p className="text-sm font-bold text-muted-foreground">
         Warm-up {step + 1} of {QUESTIONS.length} · Hi {profile!.name}!
       </p>
-      <h1 className="mt-2 font-display text-2xl font-bold">{q!.prompt}</h1>
-      <div className="mt-5 space-y-2">
-        {q!.options.map((o, i) => (
-          <button
-            key={o}
-            onClick={() => answer(i)}
-            className="toy-press w-full rounded-xl border-2 border-border bg-card px-4 py-4 text-left font-display text-lg font-bold shadow-toy"
-          >
-            {o}
-          </button>
-        ))}
-      </div>
+      {revealing ? (
+        /* ── Phase 1: show the sequence, hide the options ── */
+        <div className="mt-6 flex flex-col items-center gap-4">
+          <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground">
+            Remember this
+          </p>
+          <p className="animate-pop font-display text-5xl font-bold tracking-widest">
+            {q!.reveal}
+          </p>
+          <p className="text-xs text-muted-foreground">It will disappear in a moment…</p>
+        </div>
+      ) : (
+        /* ── Phase 2: show the question and options ── */
+        <>
+          <h1 className="mt-2 font-display text-2xl font-bold">{q!.prompt}</h1>
+          <div className="mt-5 space-y-2">
+            {q!.options.map((o, i) => (
+              <button
+                key={o}
+                onClick={() => answer(i)}
+                className="toy-press w-full rounded-xl border-2 border-border bg-card px-4 py-4 text-left font-display text-lg font-bold shadow-toy"
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
       <div className="mt-5 h-2 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full bg-primary transition-all"
