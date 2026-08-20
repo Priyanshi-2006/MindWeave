@@ -2,18 +2,27 @@ import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useProfile } from "@/lib/intelliplay/store";
 import { avatarSrc, CHARACTERS } from "@/lib/intelliplay/avatars";
-import { SKILLS, SKILL_LABELS, type RoundResult, type SkillKey } from "@/lib/intelliplay/types";
+import {
+  SKILLS,
+  SKILL_LABELS,
+  type RoundResult,
+  type SkillKey,
+} from "@/lib/intelliplay/types";
 import { cn } from "@/lib/utils";
+import logoImg from "@/assets/logo.png";
 
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-5">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="grid size-10 place-items-center rounded-2xl bg-primary text-xl text-primary-foreground shadow-toy">
-            🎯
-          </span>
-          <span className="font-display text-2xl font-bold">MindWeave</span>
+        <Link to="/" className="flex items-center" aria-label="MindWeave Home">
+          <img
+            src={logoImg}
+            alt="MindWeave"
+            className="h-auto w-28 sm:w-32 md:w-36 object-contain transition-transform hover:scale-105"
+            width={144}
+            height={81}
+          />
         </Link>
         <nav className="flex items-center gap-2 text-sm font-bold">
           <Link
@@ -99,7 +108,9 @@ export function ProfileShortcut() {
             />
             <div>
               <p className="font-display text-xl font-bold">{profile.name}</p>
-              <p className="text-xs font-bold text-muted-foreground">Age {profile.age}</p>
+              <p className="text-xs font-bold text-muted-foreground">
+                Age {profile.age}
+              </p>
             </div>
           </div>
 
@@ -114,10 +125,18 @@ export function ProfileShortcut() {
                 title={c.label}
                 className={cn(
                   "toy-press grid size-14 place-items-center rounded-2xl border-2 bg-secondary/50",
-                  profile.avatar === c.id ? "border-primary" : "border-transparent",
+                  profile.avatar === c.id
+                    ? "border-primary"
+                    : "border-transparent",
                 )}
               >
-                <img src={c.src} alt={c.label} width={48} height={48} className="size-11" />
+                <img
+                  src={c.src}
+                  alt={c.label}
+                  width={48}
+                  height={48}
+                  className="size-11"
+                />
               </button>
             ))}
             <button
@@ -214,7 +233,10 @@ export function GameHeader({
         </div>
         <div className="flex flex-wrap gap-2">
           {params.map((p) => (
-            <span key={p.label} className="rounded-full bg-muted px-3 py-1 text-xs font-bold">
+            <span
+              key={p.label}
+              className="rounded-full bg-muted px-3 py-1 text-xs font-bold"
+            >
               {p.label}: {p.value}
             </span>
           ))}
@@ -251,11 +273,15 @@ export function RoundSummary({
     <div className="panel animate-pop mt-5 p-5">
       <div className="flex flex-wrap items-center gap-4">
         <div className="grid size-20 shrink-0 place-items-center rounded-full bg-primary/15">
-          <span className="font-display text-2xl font-bold text-primary">{result.performance}</span>
+          <span className="font-display text-2xl font-bold text-primary">
+            {result.performance}
+          </span>
         </div>
         <div className="min-w-52 flex-1">
           <h2 className="font-display text-2xl font-bold">{result.feedback}</h2>
-          <p className="text-sm text-muted-foreground">{bandCopy[result.band]}</p>
+          <p className="text-sm text-muted-foreground">
+            {bandCopy[result.band]}
+          </p>
         </div>
         <span
           className={cn(
@@ -265,12 +291,16 @@ export function RoundSummary({
             confidence.label === "EASIER" && "bg-warning/25",
           )}
         >
-          Next: {confidence.label} · {Math.round(confidence.confidence * 100)}% confident
+          Next: {confidence.label} · {Math.round(confidence.confidence * 100)}%
+          confident
         </span>
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <Stat label="Accuracy" value={`${Math.round(result.metrics.accuracy * 100)}%`} />
+        <Stat
+          label="Accuracy"
+          value={`${Math.round(result.metrics.accuracy * 100)}%`}
+        />
         <Stat label="Time" value={`${result.metrics.timeTaken.toFixed(1)}s`} />
         <Stat label="Mistakes" value={result.metrics.mistakes} />
         <Stat label="Hints" value={result.metrics.hintsUsed} />
@@ -405,9 +435,12 @@ export function GameWinOverlay({
 export function NeedsProfile() {
   return (
     <div className="panel animate-pop p-8 text-center">
-      <h1 className="font-display text-2xl font-bold">Let's set up a player first</h1>
+      <h1 className="font-display text-2xl font-bold">
+        Let's set up a player first
+      </h1>
       <p className="mt-2 text-muted-foreground">
-        MindWeave personalises every challenge, so it needs a profile before playing.
+        MindWeave personalises every challenge, so it needs a profile before
+        playing.
       </p>
       <Link
         to="/"
