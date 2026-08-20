@@ -6,35 +6,48 @@ import catImg from "@/assets/char-cat.png";
 import monkeyImg from "@/assets/char-monkey.png";
 import breadImg from "@/assets/char-bread.png";
 
-export const Route = createFileRoute("/login")({
+export const Route = createFileRoute("/signup")({
   head: () => ({
     meta: [
-      { title: "Login — MindWeave" },
+      { title: "Sign Up — MindWeave" },
       {
         name: "description",
-        content: "Sign in to your MindWeave adaptive cognitive gaming account.",
+        content:
+          "Create your MindWeave account and begin your adaptive cognitive gaming journey.",
       },
     ],
   }),
-  component: LoginPage,
+  component: SignUpPage,
 });
 
-function LoginPage() {
+function SignUpPage() {
+  const [fullName, setFullName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [touched, setTouched] = useState<{
+    fullName?: boolean;
     identifier?: boolean;
     password?: boolean;
+    confirmPassword?: boolean;
   }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
-  // Client-side validation checks
+  // Client-side validation
+  const fullNameError =
+    touched.fullName && !fullName.trim() ? "Please enter your full name" : "";
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const isEmail = identifier.includes("@");
   const identifierError =
     touched.identifier && !identifier.trim()
-      ? "Please enter your username or email"
-      : "";
+      ? "Please enter your email or username"
+      : touched.identifier && isEmail && !emailRegex.test(identifier.trim())
+        ? "Please enter a valid email address"
+        : "";
 
   const passwordError =
     touched.password && !password
@@ -43,23 +56,53 @@ function LoginPage() {
         ? "Password must be at least 6 characters"
         : "";
 
-  const isFormValid = identifier.trim().length > 0 && password.length >= 6;
+  const confirmPasswordError =
+    touched.confirmPassword && !confirmPassword
+      ? "Please confirm your password"
+      : touched.confirmPassword && confirmPassword !== password
+        ? "Passwords do not match"
+        : "";
+
+  const isFormValid =
+    fullName.trim().length > 0 &&
+    identifier.trim().length > 0 &&
+    (!isEmail || emailRegex.test(identifier.trim())) &&
+    password.length >= 6 &&
+    confirmPassword === password;
+
+  const handleFullNameChange = (val: string) => {
+    setFullName(val);
+    if (signupSuccess) setSignupSuccess(false);
+    if (!touched.fullName) setTouched((t) => ({ ...t, fullName: true }));
+  };
 
   const handleIdentifierChange = (val: string) => {
     setIdentifier(val);
-    if (loginSuccess) setLoginSuccess(false);
+    if (signupSuccess) setSignupSuccess(false);
     if (!touched.identifier) setTouched((t) => ({ ...t, identifier: true }));
   };
 
   const handlePasswordChange = (val: string) => {
     setPassword(val);
-    if (loginSuccess) setLoginSuccess(false);
+    if (signupSuccess) setSignupSuccess(false);
     if (!touched.password) setTouched((t) => ({ ...t, password: true }));
+  };
+
+  const handleConfirmPasswordChange = (val: string) => {
+    setConfirmPassword(val);
+    if (signupSuccess) setSignupSuccess(false);
+    if (!touched.confirmPassword)
+      setTouched((t) => ({ ...t, confirmPassword: true }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setTouched({ identifier: true, password: true });
+    setTouched({
+      fullName: true,
+      identifier: true,
+      password: true,
+      confirmPassword: true,
+    });
 
     if (!isFormValid) {
       return;
@@ -68,8 +111,9 @@ function LoginPage() {
     setIsLoading(true);
 
     try {
-      // NOTE: Frontend scaffold. Backend authentication API integration will connect here.
-      console.log("Login submitted with:", {
+      // NOTE: Frontend scaffold. Backend registration API will connect here.
+      console.log("Sign up submitted with:", {
+        fullName: fullName.trim(),
         identifier: identifier.trim(),
         password,
       });
@@ -77,9 +121,9 @@ function LoginPage() {
       // Simulate brief network feedback
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      setLoginSuccess(true);
+      setSignupSuccess(true);
     } catch (err) {
-      setLoginSuccess(false);
+      setSignupSuccess(false);
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +175,7 @@ function LoginPage() {
         className="pointer-events-none absolute -bottom-4 -right-4 hidden w-28 sm:w-36 rotate-12 drop-shadow-md lg:block opacity-90"
       />
 
-      {/* Main Centered Login Card */}
+      {/* Main Centered Sign Up Card */}
       <div className="panel animate-pop relative z-10 w-full max-w-md p-6 sm:p-8 shadow-soft border-2 border-border">
         {/* Logo / Branding */}
         <div className="flex flex-col items-center text-center mb-6">
@@ -150,26 +194,61 @@ function LoginPage() {
             />
           </Link>
           <h1 className="mt-4 font-display text-2xl sm:text-3xl font-bold text-foreground">
-            Welcome Back! 👋
+            Create Your Account! 🧠
           </h1>
           <p className="mt-1 text-xs sm:text-sm text-muted-foreground font-semibold">
-            Sign in to continue your MindWeave journey.
+            Start your MindWeave journey today.
           </p>
         </div>
 
-        {/* Success Alert: Rendered ONLY when loginSuccess is true */}
-        {loginSuccess ? (
+        {/* Success Alert: Rendered ONLY when signupSuccess is true */}
+        {signupSuccess ? (
           <div
             className="mb-5 rounded-xl border-2 border-success/40 bg-success/15 p-3 text-xs sm:text-sm font-semibold text-foreground animate-pop"
             role="alert"
           >
-            ✅ Login submitted successfully! Backend authentication will connect
+            ✅ Account created successfully! Backend registration will connect
             here.
           </div>
         ) : null}
 
-        {/* Login Form */}
+        {/* Sign Up Form */}
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
+          {/* Full Name Field */}
+          <div>
+            <label
+              htmlFor="fullName"
+              className="block text-xs sm:text-sm font-bold text-foreground mb-1.5"
+            >
+              Full Name
+            </label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              autoComplete="name"
+              value={fullName}
+              onChange={(e) => handleFullNameChange(e.target.value)}
+              onBlur={() => setTouched((t) => ({ ...t, fullName: true }))}
+              placeholder="e.g. Maya Lin"
+              aria-invalid={!!fullNameError}
+              aria-describedby={fullNameError ? "fullname-error" : undefined}
+              className={`w-full rounded-xl border-2 bg-background px-4 py-2.5 sm:py-3 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
+                fullNameError
+                  ? "border-destructive focus:border-destructive"
+                  : "border-border focus:border-primary"
+              }`}
+            />
+            {fullNameError ? (
+              <p
+                id="fullname-error"
+                className="mt-1 text-xs font-semibold text-destructive"
+              >
+                {fullNameError}
+              </p>
+            ) : null}
+          </div>
+
           {/* Email / Username Field */}
           <div>
             <label
@@ -182,7 +261,7 @@ function LoginPage() {
               id="identifier"
               name="identifier"
               type="text"
-              autoComplete="username"
+              autoComplete="email"
               value={identifier}
               onChange={(e) => handleIdentifierChange(e.target.value)}
               onBlur={() => setTouched((t) => ({ ...t, identifier: true }))}
@@ -209,31 +288,18 @@ function LoginPage() {
 
           {/* Password Field */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="password"
-                className="text-xs sm:text-sm font-bold text-foreground"
-              >
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={() =>
-                  alert(
-                    "Password reset will be connected with backend authentication.",
-                  )
-                }
-                className="text-xs font-bold text-primary hover:underline transition-all"
-              >
-                Forgot password?
-              </button>
-            </div>
+            <label
+              htmlFor="password"
+              className="block text-xs sm:text-sm font-bold text-foreground mb-1.5"
+            >
+              Password
+            </label>
             <div className="relative">
               <input
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
                 onBlur={() => setTouched((t) => ({ ...t, password: true }))}
@@ -265,26 +331,79 @@ function LoginPage() {
             ) : null}
           </div>
 
-          {/* Login Submit Button */}
+          {/* Confirm Password Field */}
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="block text-xs sm:text-sm font-bold text-foreground mb-1.5"
+            >
+              Confirm Password
+            </label>
+            <div className="relative">
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                onBlur={() =>
+                  setTouched((t) => ({ ...t, confirmPassword: true }))
+                }
+                placeholder="••••••••"
+                aria-invalid={!!confirmPasswordError}
+                aria-describedby={
+                  confirmPasswordError ? "confirm-password-error" : undefined
+                }
+                className={`w-full rounded-xl border-2 bg-background px-4 py-2.5 sm:py-3 pr-12 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
+                  confirmPasswordError
+                    ? "border-destructive focus:border-destructive"
+                    : "border-border focus:border-primary"
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((s) => !s)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
+              >
+                {showConfirmPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
+            {confirmPasswordError ? (
+              <p
+                id="confirm-password-error"
+                className="mt-1 text-xs font-semibold text-destructive"
+              >
+                {confirmPasswordError}
+              </p>
+            ) : null}
+          </div>
+
+          {/* Create Account Submit Button */}
           <div className="pt-2">
             <button
               type="submit"
               disabled={isLoading}
               className="toy-press w-full rounded-full bg-primary py-3 sm:py-3.5 font-display text-base sm:text-lg font-bold text-primary-foreground shadow-toy transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              {isLoading ? "Signing in…" : "Login"}
+              {isLoading ? "Creating account…" : "Create Account"}
             </button>
           </div>
         </form>
 
-        {/* Sign Up Link */}
+        {/* Login Link */}
         <div className="mt-6 text-center text-xs sm:text-sm font-semibold text-muted-foreground border-t border-border/60 pt-4">
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <Link
-            to="/signup"
+            to="/login"
             className="font-bold text-primary hover:underline transition-colors"
           >
-            Sign up
+            Login
           </Link>
         </div>
       </div>
