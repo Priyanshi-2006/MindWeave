@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AppShell,
   GameHeader,
+  GameWinOverlay,
   NeedsProfile,
   RoundSummary,
   Stat,
@@ -319,7 +320,11 @@ function MazeGame() {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-hidden sm:gap-3 md:grid md:grid-cols-[minmax(0,1fr)_16rem] lg:grid-cols-[minmax(0,1fr)_18rem] md:items-stretch">
-        <div className="panel flex min-h-0 flex-1 flex-col items-center justify-between overflow-hidden p-2.5 sm:p-3.5">
+        <div className="panel relative flex min-h-0 flex-1 flex-col items-center justify-between overflow-hidden p-2.5 sm:p-3.5">
+          <GameWinOverlay
+            show={!!result && result.metrics.completed}
+            onNextGame={reset}
+          />
           <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden">
             <div
               className="mx-auto grid aspect-square h-full max-h-full max-w-full overflow-hidden rounded-xl bg-muted/40"

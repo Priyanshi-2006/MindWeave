@@ -1,4 +1,4 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useProfile } from "@/lib/intelliplay/store";
 import { avatarSrc, CHARACTERS } from "@/lib/intelliplay/avatars";
@@ -304,6 +304,98 @@ export function RoundSummary({
           className="toy-press rounded-full border-2 border-border bg-card px-5 py-3 font-display text-lg font-bold"
         >
           See progress
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Fullscreen trophy overlay shown on round completion. Trophy displays for
+ *  1.5 s, then "Next Game" / "Home Screen" buttons fade in. */
+export function GameWinOverlay({
+  show,
+  onNextGame,
+}: {
+  show: boolean;
+  onNextGame: () => void;
+}) {
+  const navigate = useNavigate();
+  const [visible, setVisible] = useState(false);
+  const [animate, setAnimate] = useState(false);
+  const [showButtons, setShowButtons] = useState(false);
+
+  useEffect(() => {
+    if (show) {
+      setVisible(true);
+      setShowButtons(false);
+      // fade-in the overlay
+      const t1 = setTimeout(() => setAnimate(true), 30);
+      // after 1.5 s show the action buttons
+      const t2 = setTimeout(() => setShowButtons(true), 1500);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    } else {
+      setAnimate(false);
+      setShowButtons(false);
+      const t = setTimeout(() => setVisible(false), 400);
+      return () => clearTimeout(t);
+    }
+  }, [show]);
+
+  if (!visible) return null;
+
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/70 backdrop-blur-md transition-opacity duration-500",
+        animate ? "opacity-100" : "opacity-0",
+      )}
+    >
+      {/* Trophy — scales up on enter */}
+      <div
+        className={cn(
+          "transition-all duration-700",
+          animate ? "scale-100 translate-y-0" : "scale-50 -translate-y-12",
+        )}
+      >
+        <img
+          src="/trophy.png"
+          alt="Winner trophy"
+          width={180}
+          height={180}
+          className="drop-shadow-[0_0_40px_rgba(255,215,0,0.5)]"
+        />
+      </div>
+
+      <p
+        className={cn(
+          "mt-6 font-display text-4xl font-bold text-white drop-shadow-lg transition-all duration-600 delay-150 sm:text-5xl",
+          animate ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
+        )}
+      >
+        You Win! 🎉
+      </p>
+
+      {/* Buttons — appear after 1.5 s delay */}
+      <div
+        className={cn(
+          "mt-8 flex flex-col items-center gap-4 transition-all duration-500",
+          showButtons ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8 pointer-events-none",
+        )}
+      >
+        <button
+          onClick={onNextGame}
+          className="toy-press rounded-full bg-primary px-10 py-4 font-display text-2xl font-bold text-primary-foreground shadow-toy"
+        >
+          🎮 Next Game
+        </button>
+        <button
+          onClick={() => navigate({ to: "/" })}
+          className="toy-press rounded-full border-2 border-white/60 bg-white/15 px-10 py-4 font-display text-2xl font-bold text-white shadow-toy"
+        >
+          🏠 Home Screen
         </button>
       </div>
     </div>

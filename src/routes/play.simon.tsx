@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AppShell,
   GameHeader,
+  GameWinOverlay,
   NeedsProfile,
   RoundSummary,
   Stat,
@@ -211,7 +212,11 @@ function SimonGame() {
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-hidden sm:gap-3 md:grid md:grid-cols-[minmax(0,1fr)_16rem] lg:grid-cols-[minmax(0,1fr)_18rem] md:items-stretch">
-        <div className="panel flex min-h-0 flex-1 flex-col items-center justify-between overflow-hidden p-2.5 sm:p-3.5">
+        <div className="panel relative flex min-h-0 flex-1 flex-col items-center justify-between overflow-hidden p-2.5 sm:p-3.5">
+          <GameWinOverlay
+            show={!!result && result.metrics.completed}
+            onNextGame={startRound}
+          />
           <div className="shrink-0 text-center">
             <p className="font-display text-base font-bold sm:text-lg lg:text-xl">
               {phase === "showing"
