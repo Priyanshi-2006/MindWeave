@@ -30,7 +30,8 @@ export const Route = createFileRoute("/play/spot")({
       { property: "og:title", content: "Spot the Difference — IntelliPlay" },
       {
         property: "og:description",
-        content: "Adaptive observation and concentration training for children.",
+        content:
+          "Adaptive observation and concentration training for children.",
       },
     ],
   }),
@@ -71,7 +72,11 @@ type Item = {
   rotate: number;
 };
 
-function makeScene(objectCount: number, differenceCount: number, subtlety: number) {
+function makeScene(
+  objectCount: number,
+  differenceCount: number,
+  subtlety: number,
+) {
   const items: Item[] = [];
   const cols = Math.ceil(Math.sqrt(objectCount));
   for (let i = 0; i < objectCount; i++) {
@@ -81,7 +86,9 @@ function makeScene(objectCount: number, differenceCount: number, subtlety: numbe
       id: i,
       emoji: EMOJI[Math.floor(Math.random() * EMOJI.length)]!,
       x: (col + 0.5) * (100 / cols) + (Math.random() - 0.5) * 6,
-      y: (row + 0.5) * (100 / Math.ceil(objectCount / cols)) + (Math.random() - 0.5) * 6,
+      y:
+        (row + 0.5) * (100 / Math.ceil(objectCount / cols)) +
+        (Math.random() - 0.5) * 6,
       size: 1 + Math.random() * 0.35,
       hue: HUES[Math.floor(Math.random() * HUES.length)]!,
       rotate: Math.round((Math.random() - 0.5) * 20),
@@ -99,9 +106,14 @@ function makeScene(objectCount: number, differenceCount: number, subtlety: numbe
     if (kind === 0)
       return {
         ...it,
-        emoji: EMOJI[(EMOJI.indexOf(it.emoji) + 1 + Math.floor(magnitude * 3)) % EMOJI.length]!,
+        emoji:
+          EMOJI[
+            (EMOJI.indexOf(it.emoji) + 1 + Math.floor(magnitude * 3)) %
+              EMOJI.length
+          ]!,
       };
-    if (kind === 1) return { ...it, size: it.size * (1 + (0.12 + magnitude * 0.4)) };
+    if (kind === 1)
+      return { ...it, size: it.size * (1 + (0.12 + magnitude * 0.4)) };
     return {
       ...it,
       rotate: it.rotate + 25 + magnitude * 60,
@@ -153,7 +165,9 @@ function SpotGame() {
       if (result) return;
       const time = (Date.now() - startRef.current) / 1000;
       const accuracy = total ? foundCount / total : 0;
-      const avgReaction = clickTimes.current.length ? time / clickTimes.current.length : time;
+      const avgReaction = clickTimes.current.length
+        ? time / clickTimes.current.length
+        : time;
       const res = submitRound(
         "spot",
         {
@@ -195,7 +209,8 @@ function SpotGame() {
     if (scene.diffIds.has(id) && !found.includes(id)) {
       const next = [...found, id];
       setFound(next);
-      if (next.length === total) window.setTimeout(() => finish(true, next.length), 80);
+      if (next.length === total)
+        window.setTimeout(() => finish(true, next.length), 80);
     } else {
       // Tapped a non-difference icon or an already found icon => count mistake
       setMisses((m) => m + 1);
@@ -229,12 +244,16 @@ function SpotGame() {
     setElapsed(0);
   };
 
-  const ability = rollingAbility(profile!.history, "spot", result?.performance ?? 60);
+  const ability = rollingAbility(
+    profile!.history,
+    "spot",
+    result?.performance ?? 60,
+  );
 
   const Panel = ({ items, label }: { items: Item[]; label: string }) => (
     <div
       onClick={handlePanelClick}
-      className="relative aspect-square w-full overflow-hidden rounded-xl border-2 border-border bg-secondary/50 cursor-crosshair"
+      className="relative aspect-square h-full max-h-full max-w-full overflow-hidden rounded-xl border-2 border-border bg-secondary/50 cursor-crosshair"
     >
       {items.map((it) => {
         const isFound = found.includes(it.id);
@@ -246,14 +265,17 @@ function SpotGame() {
             onClick={(e) => click(it.id, e)}
             onDoubleClick={(e) => click(it.id, e)}
             className={cn(
-              "absolute grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full transition-all duration-150 p-1.5 touch-manipulation cursor-pointer select-none",
-              isFound && "ring-4 ring-success bg-success/25 scale-105 shadow-soft",
-              isHinted && !isFound && "ring-4 ring-dashed ring-warning bg-warning/30"
+              "absolute grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full transition-all duration-150 p-1 touch-manipulation cursor-pointer select-none",
+              isFound &&
+                "ring-4 ring-success bg-success/25 scale-105 shadow-soft",
+              isHinted &&
+                !isFound &&
+                "ring-4 ring-dashed ring-warning bg-warning/30",
             )}
             style={{
               left: `${it.x}%`,
               top: `${it.y}%`,
-              fontSize: `${it.size * 1.6}rem`,
+              fontSize: `min(3.2vw, min(3.2vh, ${it.size * 1.5}rem))`,
               transform: `translate(-50%,-50%) rotate(${it.rotate}deg)`,
               filter: `hue-rotate(${it.hue}deg)`,
             }}
@@ -267,67 +289,86 @@ function SpotGame() {
   );
 
   return (
-    <>
-      <GameHeader
-        title="Spot the Difference"
-        emoji="👀"
-        skills="visual attention, observation and concentration"
-        note={crossGameNote("spot", profile!.skills)}
-        params={[
-          { label: "Differences", value: String(diff.differenceCount) },
-          { label: "Subtlety", value: diff.subtlety.toFixed(2) },
-          { label: "Objects", value: String(diff.objectCount) },
-          { label: "Time limit", value: diff.timeLimit ? `${diff.timeLimit}s` : "relaxed" },
-        ]}
-      />
+    <div
+      className={`flex h-[calc(100dvh-5.5rem)] max-h-[calc(100dvh-5.5rem)] -mb-20 min-h-0 flex-col pb-2 ${
+        result ? "overflow-y-auto" : "overflow-hidden"
+      }`}
+    >
+      <div className="shrink-0 [&>.panel]:mb-2 sm:[&>.panel]:mb-3 [&>.panel]:p-3 sm:[&>.panel]:p-4">
+        <GameHeader
+          title="Spot the Difference"
+          emoji="👀"
+          skills="visual attention, observation and concentration"
+          note={crossGameNote("spot", profile!.skills)}
+          params={[
+            { label: "Differences", value: String(diff.differenceCount) },
+            { label: "Subtlety", value: diff.subtlety.toFixed(2) },
+            { label: "Objects", value: String(diff.objectCount) },
+            {
+              label: "Time limit",
+              value: diff.timeLimit ? `${diff.timeLimit}s` : "relaxed",
+            },
+          ]}
+        />
+      </div>
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_16rem]">
-        <div className="panel p-4">
-          <p className="mb-3 text-center text-sm font-bold text-muted-foreground">
-            Tap or double-tap any object on <span className="text-foreground font-extrabold">either</span> picture to circle differences!
+      <div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-hidden sm:gap-3 md:grid md:grid-cols-[minmax(0,1fr)_16rem] lg:grid-cols-[minmax(0,1fr)_18rem] md:items-stretch">
+        <div className="panel flex min-h-0 flex-1 flex-col items-center justify-between overflow-hidden p-2.5 sm:p-3.5">
+          <p className="shrink-0 mb-1.5 text-center text-xs font-bold text-muted-foreground sm:text-sm">
+            Tap or double-tap any object on{" "}
+            <span className="text-foreground font-extrabold">either</span>{" "}
+            picture to circle differences!
           </p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Panel items={scene.left} label="Left" />
-            <Panel items={scene.right} label="Right" />
+          <div className="flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden py-1">
+            <div className="grid h-full max-h-full w-full max-w-full grid-cols-2 gap-2 sm:gap-3 items-center justify-items-center">
+              <Panel items={scene.left} label="Left" />
+              <Panel items={scene.right} label="Right" />
+            </div>
           </div>
         </div>
 
-        <aside className="panel h-fit space-y-3 p-4">
-          <Stat label="Found" value={`${found.length} / ${total}`} />
-          <Stat label="Wrong taps" value={misses} />
-          <Stat
-            label={diff.timeLimit ? "Time left" : "Time"}
-            value={`${diff.timeLimit ? Math.max(0, diff.timeLimit - elapsed).toFixed(0) : elapsed.toFixed(0)}s`}
-          />
+        <aside className="panel flex shrink-0 flex-col justify-between space-y-2 overflow-y-auto p-2.5 sm:space-y-3 sm:p-3.5 md:h-full">
+          <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-3 md:grid-cols-1 sm:gap-2">
+              <Stat label="Found" value={`${found.length} / ${total}`} />
+              <Stat label="Wrong taps" value={misses} />
+              <Stat
+                label={diff.timeLimit ? "Time left" : "Time"}
+                value={`${diff.timeLimit ? Math.max(0, diff.timeLimit - elapsed).toFixed(0) : elapsed.toFixed(0)}s`}
+              />
+            </div>
+          </div>
           {!result ? (
-            <>
+            <div className="flex flex-col gap-1.5 pt-1 sm:flex-row md:flex-col sm:gap-2">
               <button
                 onClick={hint}
-                className="toy-press w-full rounded-full bg-warning px-4 py-3 font-display font-bold text-warning-foreground shadow-toy"
+                className="toy-press flex-1 rounded-full bg-warning px-3 py-2 font-display text-xs font-bold text-warning-foreground shadow-toy sm:text-sm md:py-2.5 lg:py-3 lg:text-base"
               >
                 💡 Show one
               </button>
               <button
                 onClick={() => finish(false, found.length)}
-                className="w-full rounded-full border-2 border-border px-4 py-2 text-sm font-bold"
+                className="flex-1 rounded-full border-2 border-border px-3 py-1.5 text-xs font-bold sm:text-sm md:py-2"
               >
                 Finish round
               </button>
-            </>
+            </div>
           ) : null}
         </aside>
       </div>
 
       {result ? (
-        <RoundSummary
-          result={result}
-          onAgain={reset}
-          confidence={recommendation(
-            adjustmentFor(bandFor(ability), profile!.streaks.spot),
-            ability,
-          )}
-        />
+        <div className="mt-3 shrink-0 overflow-y-auto sm:mt-4">
+          <RoundSummary
+            result={result}
+            onAgain={reset}
+            confidence={recommendation(
+              adjustmentFor(bandFor(ability), profile!.streaks.spot),
+              ability,
+            )}
+          />
+        </div>
       ) : null}
-    </>
+    </div>
   );
 }
