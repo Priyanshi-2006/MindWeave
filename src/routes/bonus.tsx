@@ -49,8 +49,8 @@ function BonusPage() {
 
   const offer = evaluateBonus(profile);
 
-  const handleBonusComplete = (metrics: BonusMetrics) => {
-    const res = submitBonus(offer.game, metrics);
+  const handleBonusComplete = async (metrics: BonusMetrics) => {
+    const res = await submitBonus(offer.game, metrics);
     setResult(res);
     setView("result");
   };

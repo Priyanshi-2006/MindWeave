@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import admin from "firebase-admin";
+import { getApps, initializeApp, cert } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
 import { getDb } from "../db";
 import type {
   RoundResult,
@@ -8,7 +9,6 @@ import type {
   GameType,
   BonusGameType,
   BonusResult,
-  ParentSettings,
 } from "./types";
 import { processRound } from "./engine";
 import { processBonusRound } from "./bonus";
@@ -16,7 +16,7 @@ import type { BonusMetrics } from "./bonus";
 
 // Helper to initialize Firebase Admin SDK safely
 function initAdmin() {
-  if (admin.apps.length === 0) {
+  if (getApps().length === 0) {
     const projectId = process.env.FIREBASE_PROJECT_ID;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
@@ -27,8 +27,8 @@ function initAdmin() {
       );
     }
 
-    admin.initializeApp({
-      credential: admin.credential.cert({
+    initializeApp({
+      credential: cert({
         projectId,
         clientEmail,
         privateKey,
@@ -40,7 +40,7 @@ function initAdmin() {
 // Helper to authenticate user on server using JWT ID Token
 async function authenticate(idToken: string): Promise<string> {
   initAdmin();
-  const decodedToken = await admin.auth().verifyIdToken(idToken);
+  const decodedToken = await getAuth().verifyIdToken(idToken);
   return decodedToken.uid;
 }
 
@@ -49,10 +49,11 @@ export const fetchProfile = createServerFn({ method: "GET" })
   .validator((idToken: string) => idToken)
   .handler(async ({ data: idToken }) => {
     const uid = await authenticate(idToken);
-    const db = await getDb();
+    const db = getDb();
 
-    const userDoc = await db.collection("users").findOne({ _id: uid as any });
-    return userDoc?.profile || null;
+    const snap = await db.collection("users").doc(uid).get();
+    if (!snap.exists) return null;
+    return (snap.data()?.profile as ChildProfile) || null;
   });
 
 // 2. Save User Profile directly (used on creating profile, updating avatar, updating settings, etc.)
@@ -60,18 +61,15 @@ export const saveProfile = createServerFn({ method: "POST" })
   .validator((data: { idToken: string; profile: ChildProfile | null }) => data)
   .handler(async ({ data }) => {
     const uid = await authenticate(data.idToken);
-    const db = await getDb();
+    const db = getDb();
+    const ref = db.collection("users").doc(uid);
 
     if (data.profile === null) {
-      await db.collection("users").deleteOne({ _id: uid as any });
+      await ref.delete();
       return { success: true };
     }
 
-    await db.collection("users").updateOne(
-      { _id: uid as any },
-      { $set: { profile: data.profile } },
-      { upsert: true }
-    );
+    await ref.set({ profile: data.profile }, { merge: true });
     return { success: true };
   });
 
@@ -87,15 +85,15 @@ export const submitRoundToServer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const uid = await authenticate(data.idToken);
-    const db = await getDb();
+    const db = getDb();
 
     // Fetch the current user doc
-    const userDoc = await db.collection("users").findOne({ _id: uid as any });
-    if (!userDoc || !userDoc.profile) {
+    const snap = await db.collection("users").doc(uid).get();
+    if (!snap.exists || !snap.data()?.profile) {
       throw new Error("No profile found for this authenticated user.");
     }
 
-    const currentProfile: ChildProfile = userDoc.profile;
+    const currentProfile: ChildProfile = snap.data()!.profile;
 
     // Run the cognitive adaptation engine on the server
     const { profile: nextProfile, result } = processRound(
@@ -106,7 +104,7 @@ export const submitRoundToServer = createServerFn({ method: "POST" })
     );
 
     // Save historical round detail
-    await db.collection("game_rounds").insertOne({
+    await db.collection("game_rounds").add({
       userId: uid,
       gameType: data.game,
       result,
@@ -114,10 +112,7 @@ export const submitRoundToServer = createServerFn({ method: "POST" })
     });
 
     // Save updated profile state
-    await db.collection("users").updateOne(
-      { _id: uid as any },
-      { $set: { profile: nextProfile } }
-    );
+    await db.collection("users").doc(uid).set({ profile: nextProfile }, { merge: true });
 
     return { nextProfile, result };
   });
@@ -133,15 +128,15 @@ export const submitBonusToServer = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const uid = await authenticate(data.idToken);
-    const db = await getDb();
+    const db = getDb();
 
     // Fetch the current user doc
-    const userDoc = await db.collection("users").findOne({ _id: uid as any });
-    if (!userDoc || !userDoc.profile) {
+    const snap = await db.collection("users").doc(uid).get();
+    if (!snap.exists || !snap.data()?.profile) {
       throw new Error("No profile found for this authenticated user.");
     }
 
-    const currentProfile: ChildProfile = userDoc.profile;
+    const currentProfile: ChildProfile = snap.data()!.profile;
 
     // Run the cognitive adaptation engine for bonus rounds on the server
     const { profile: nextProfile, result } = processBonusRound(
@@ -151,7 +146,7 @@ export const submitBonusToServer = createServerFn({ method: "POST" })
     );
 
     // Save historical round detail
-    await db.collection("game_rounds").insertOne({
+    await db.collection("game_rounds").add({
       userId: uid,
       gameType: `bonus-${data.game}`,
       result,
@@ -159,10 +154,7 @@ export const submitBonusToServer = createServerFn({ method: "POST" })
     });
 
     // Save updated profile state
-    await db.collection("users").updateOne(
-      { _id: uid as any },
-      { $set: { profile: nextProfile } }
-    );
+    await db.collection("users").doc(uid).set({ profile: nextProfile }, { merge: true });
 
     return { nextProfile, result };
   });

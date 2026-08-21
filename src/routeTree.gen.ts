@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BonusRouteImport } from './routes/bonus'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as ParentRouteImport } from './routes/parent'
 import { Route as PlayDetectiveRouteImport } from './routes/play.detective'
 import { Route as PlayMazeRouteImport } from './routes/play.maze'
@@ -31,6 +32,11 @@ const BonusRoute = BonusRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ParentRoute = ParentRouteImport.update({
@@ -63,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bonus': typeof BonusRoute
   '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/parent': typeof ParentRoute
   '/play/detective': typeof PlayDetectiveRoute
   '/play/maze': typeof PlayMazeRoute
@@ -73,6 +80,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bonus': typeof BonusRoute
   '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/parent': typeof ParentRoute
   '/play/detective': typeof PlayDetectiveRoute
   '/play/maze': typeof PlayMazeRoute
@@ -84,6 +92,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/bonus': typeof BonusRoute
   '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/parent': typeof ParentRoute
   '/play/detective': typeof PlayDetectiveRoute
   '/play/maze': typeof PlayMazeRoute
@@ -96,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bonus'
     | '/dashboard'
+    | '/login'
     | '/parent'
     | '/play/detective'
     | '/play/maze'
@@ -106,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bonus'
     | '/dashboard'
+    | '/login'
     | '/parent'
     | '/play/detective'
     | '/play/maze'
@@ -116,6 +127,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bonus'
     | '/dashboard'
+    | '/login'
     | '/parent'
     | '/play/detective'
     | '/play/maze'
@@ -127,6 +139,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BonusRoute: typeof BonusRoute
   DashboardRoute: typeof DashboardRoute
+  LoginRoute: typeof LoginRoute
   ParentRoute: typeof ParentRoute
   PlayDetectiveRoute: typeof PlayDetectiveRoute
   PlayMazeRoute: typeof PlayMazeRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/parent': {
@@ -199,6 +219,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BonusRoute: BonusRoute,
   DashboardRoute: DashboardRoute,
+  LoginRoute: LoginRoute,
   ParentRoute: ParentRoute,
   PlayDetectiveRoute: PlayDetectiveRoute,
   PlayMazeRoute: PlayMazeRoute,

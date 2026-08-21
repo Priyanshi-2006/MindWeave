@@ -57,7 +57,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 /** Top-right avatar button + cognitive profile popover with avatar picker/upload. */
 export function ProfileShortcut() {
-  const { profile, setAvatar } = useProfile();
+  const { profile, setAvatar, signOut, user, ready } = useProfile();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -71,7 +72,47 @@ export function ProfileShortcut() {
     return () => document.removeEventListener("mousedown", onDown);
   }, [open]);
 
-  if (!profile) return null;
+  if (!ready) return null;
+
+  if (!user) {
+    return (
+      <Link
+        to="/login"
+        className="toy-press ml-1 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow-toy"
+      >
+        Sign in
+      </Link>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div ref={wrapRef} className="relative ml-1">
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Open account menu"
+          className="toy-press flex items-center gap-2 rounded-full border-2 border-border bg-card py-1 px-3 shadow-soft text-sm font-bold"
+        >
+          <span>👤 {user.email?.split("@")[0] || "Account"}</span>
+        </button>
+        {open ? (
+          <div className="panel animate-pop absolute right-0 z-50 mt-2 w-48 p-3 text-left">
+            <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+            <button
+              onClick={async () => {
+                setOpen(false);
+                await signOut();
+                navigate({ to: "/login" });
+              }}
+              className="toy-press mt-3 block w-full rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-center font-display text-xs font-bold text-destructive"
+            >
+              Sign out
+            </button>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
 
   const onUpload = (file: File) => {
     const reader = new FileReader();
@@ -175,6 +216,16 @@ export function ProfileShortcut() {
           >
             Full dashboard
           </Link>
+          <button
+            onClick={async () => {
+              setOpen(false);
+              await signOut();
+              navigate({ to: "/login" });
+            }}
+            className="toy-press mt-2 block w-full rounded-full border-2 border-border bg-card px-4 py-2.5 text-center font-display text-sm font-bold text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors"
+          >
+            Sign out
+          </button>
         </div>
       ) : null}
     </div>

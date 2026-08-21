@@ -19,6 +19,7 @@ import type {
   RoundResult,
 } from "./types";
 import { auth } from "../firebase";
+import { signOut as firebaseSignOut, type User } from "firebase/auth";
 import {
   fetchProfile,
   saveProfile,
@@ -34,6 +35,7 @@ type Ctx = {
   ready: boolean;
   lastResult: RoundResult | null;
   idToken: string | null;
+  user: User | null;
   start: (name: string, age: number, avatar?: string) => Promise<void>;
   setAvatar: (avatar: string) => Promise<void>;
   finishAssessment: (skills: Partial<ChildProfile["skills"]>) => Promise<void>;
@@ -42,6 +44,7 @@ type Ctx = {
   dismissBonus: () => Promise<void>;
   updateSettings: (patch: Partial<ParentSettings>) => Promise<void>;
   reset: () => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
 const ProfileContext = createContext<Ctx | null>(null);
@@ -51,16 +54,18 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [lastResult, setLastResult] = useState<RoundResult | null>(null);
   const [idToken, setIdToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-  // Monitor auth state and sync with MongoDB Atlas or fallback to LocalStorage
+  // Monitor auth state and sync with Firestore or fallback to LocalStorage
   useEffect(() => {
-    return auth.onIdTokenChanged(async (user) => {
-      if (user) {
+    return auth.onIdTokenChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
         try {
-          const token = await user.getIdToken();
+          const token = await firebaseUser.getIdToken();
           setIdToken(token);
           
-          // Fetch from MongoDB Atlas
+          // Fetch from Firestore
           const dbProfile = await fetchProfile({ data: token });
           if (dbProfile) {
             setProfile(dbProfile);
@@ -80,6 +85,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         }
       } else {
         // Logged out / Anonymous mode: load from LocalStorage
+        setUser(null);
         setIdToken(null);
         try {
           const raw = window.localStorage.getItem(KEY) ?? window.localStorage.getItem(LEGACY_KEY);
@@ -161,13 +167,22 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (!profile) throw new Error("No profile active");
 
       if (idToken) {
-        // Submit to database -> updates server engine and registers database log
-        const { nextProfile, result } = await submitRoundToServer({
-          data: { idToken, game, metrics, diag },
-        });
-        setProfile(nextProfile);
-        setLastResult(result);
-        return result;
+        try {
+          // Submit to database -> updates server engine and registers database log
+          const { nextProfile, result } = await submitRoundToServer({
+            data: { idToken, game, metrics, diag },
+          });
+          setProfile(nextProfile);
+          setLastResult(result);
+          return result;
+        } catch (err) {
+          console.error("Server round submission failed, falling back to local engine:", err);
+          // Fallback to local adaptive engine processing
+          const { profile: next, result } = processRound(profile, game, metrics, diag);
+          setProfile(next);
+          setLastResult(result);
+          return result;
+        }
       } else {
         // Fallback to local adaptive engine processing
         const { profile: next, result } = processRound(profile, game, metrics, diag);
@@ -184,12 +199,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (!profile) throw new Error("No profile active");
 
       if (idToken) {
-        // Submit to database -> updates server engine and registers database log
-        const { nextProfile, result } = await submitBonusToServer({
-          data: { idToken, game, metrics },
-        });
-        setProfile(nextProfile);
-        return result;
+        try {
+          // Submit to database -> updates server engine and registers database log
+          const { nextProfile, result } = await submitBonusToServer({
+            data: { idToken, game, metrics },
+          });
+          setProfile(nextProfile);
+          return result;
+        } catch (err) {
+          console.error("Server bonus submission failed, falling back to local engine:", err);
+          // Fallback to local adaptive engine processing
+          const { profile: next, result } = processBonusRound(profile, game, metrics);
+          setProfile(next);
+          return result;
+        }
       } else {
         // Fallback to local adaptive engine processing
         const { profile: next, result } = processBonusRound(profile, game, metrics);
@@ -218,12 +241,20 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
   }, [idToken]);
 
+  const signOut = useCallback(async () => {
+    await firebaseSignOut(auth);
+    setProfile(null);
+    setIdToken(null);
+    setUser(null);
+  }, []);
+
   const value = useMemo(
     () => ({
       profile,
       ready,
       lastResult,
       idToken,
+      user,
       start,
       setAvatar,
       finishAssessment,
@@ -232,12 +263,14 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       dismissBonus,
       updateSettings,
       reset,
+      signOut,
     }),
     [
       profile,
       ready,
       lastResult,
       idToken,
+      user,
       start,
       setAvatar,
       finishAssessment,
@@ -246,6 +279,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       dismissBonus,
       updateSettings,
       reset,
+      signOut,
     ]
   );
 

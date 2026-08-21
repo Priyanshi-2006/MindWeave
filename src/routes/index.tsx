@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AppShell } from "@/components/intelliplay/shell";
 import { useProfile } from "@/lib/intelliplay/store";
@@ -28,13 +28,21 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { profile, ready } = useProfile();
+  const { profile, ready, user } = useProfile();
+  const navigate = useNavigate();
+
   if (!ready)
     return (
       <AppShell>
         <div className="panel p-8 text-center">Loading…</div>
       </AppShell>
     );
+
+  if (!user) {
+    navigate({ to: "/login" });
+    return null;
+  }
+
   if (!profile)
     return (
       <AppShell>
