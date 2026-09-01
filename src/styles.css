@@ -2,7 +2,8 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant high-contrast (&:where(.high-contrast, .high-contrast *));
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
@@ -11,8 +12,8 @@
   --radius-xl: calc(var(--radius) + 6px);
   --radius-2xl: calc(var(--radius) + 12px);
   --radius-3xl: calc(var(--radius) + 20px);
-  --font-display: "Baloo 2", ui-rounded, system-ui, sans-serif;
-  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -45,59 +46,127 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --shadow-toy: 0 10px 0 -2px var(--shadow-deep), 0 18px 30px -12px oklch(0.35 0.08 250 / 0.35);
-  --shadow-soft: 0 12px 34px -18px oklch(0.35 0.08 250 / 0.45);
+  --shadow-toy: var(--shadow-toy-val);
+  --shadow-soft: var(--shadow-soft-val);
 }
 
 :root {
-  --radius: 1rem;
-  --background: oklch(0.975 0.018 95);
-  --foreground: oklch(0.28 0.05 264);
+  --radius: 1.25rem;
+  --background: oklch(0.98 0.01 90);
+  --foreground: oklch(0.22 0.04 250);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.28 0.05 264);
+  --card-foreground: oklch(0.22 0.04 250);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.28 0.05 264);
-  --primary: oklch(0.62 0.16 195);
-  --primary-foreground: oklch(0.99 0.01 195);
-  --secondary: oklch(0.94 0.04 95);
-  --secondary-foreground: oklch(0.35 0.06 60);
-  --muted: oklch(0.95 0.015 250);
-  --muted-foreground: oklch(0.52 0.03 258);
-  --accent: oklch(0.74 0.17 45);
-  --accent-foreground: oklch(0.99 0.01 60);
-  --destructive: oklch(0.62 0.21 25);
+  --popover-foreground: oklch(0.22 0.04 250);
+  --primary: oklch(0.48 0.15 250);
+  --primary-foreground: oklch(0.99 0.01 250);
+  --secondary: oklch(0.94 0.03 90);
+  --secondary-foreground: oklch(0.3 0.05 250);
+  --muted: oklch(0.94 0.01 250);
+  --muted-foreground: oklch(0.42 0.03 250);
+  --accent: oklch(0.58 0.14 160);
+  --accent-foreground: oklch(0.99 0.01 160);
+  --destructive: oklch(0.55 0.2 25);
   --destructive-foreground: oklch(0.99 0.01 25);
-  --success: oklch(0.68 0.16 152);
-  --success-foreground: oklch(0.99 0.01 152);
-  --warning: oklch(0.82 0.15 85);
-  --warning-foreground: oklch(0.3 0.06 60);
-  --border: oklch(0.9 0.02 250);
-  --input: oklch(0.9 0.02 250);
-  --ring: oklch(0.62 0.16 195);
-  --shadow-deep: oklch(0.86 0.03 250);
-  --maze: oklch(0.62 0.16 195);
-  --spot: oklch(0.72 0.16 45);
-  --simon: oklch(0.62 0.19 300);
-  --detective: oklch(0.58 0.14 250);
-  --chart-1: oklch(0.62 0.16 195);
-  --chart-2: oklch(0.72 0.16 45);
-  --chart-3: oklch(0.62 0.19 300);
-  --chart-4: oklch(0.68 0.16 152);
-  --chart-5: oklch(0.58 0.14 250);
+  --success: oklch(0.58 0.14 150);
+  --success-foreground: oklch(0.99 0.01 150);
+  --warning: oklch(0.75 0.14 80);
+  --warning-foreground: oklch(0.25 0.05 80);
+  --border: oklch(0.86 0.02 250);
+  --input: oklch(0.86 0.02 250);
+  --ring: oklch(0.48 0.15 250);
+  --shadow-deep: oklch(0.8 0.02 250);
+  --shadow-toy-val: 0 4px 12px -2px oklch(0.2 0.05 250 / 0.12);
+  --shadow-soft-val: 0 8px 24px -10px oklch(0.2 0.05 250 / 0.15);
+  --maze: oklch(0.48 0.15 250);
+  --spot: oklch(0.58 0.14 160);
+  --simon: oklch(0.52 0.15 290);
+  --detective: oklch(0.45 0.12 230);
+  --chart-1: oklch(0.48 0.15 250);
+  --chart-2: oklch(0.58 0.14 160);
+  --chart-3: oklch(0.52 0.15 290);
+  --chart-4: oklch(0.58 0.14 150);
+  --chart-5: oklch(0.45 0.12 230);
 }
 
-.dark {
-  --background: oklch(0.22 0.03 260);
+.dark,
+:root[class~="dark"],
+html.dark {
+  --background: oklch(0.14 0.02 250);
   --foreground: oklch(0.96 0.01 250);
-  --card: oklch(0.27 0.035 260);
+  --card: oklch(0.2 0.02 250);
   --card-foreground: oklch(0.96 0.01 250);
-  --popover: oklch(0.27 0.035 260);
+  --popover: oklch(0.2 0.02 250);
   --popover-foreground: oklch(0.96 0.01 250);
-  --muted: oklch(0.32 0.03 260);
-  --muted-foreground: oklch(0.72 0.02 258);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 15%);
-  --shadow-deep: oklch(0.18 0.03 260);
+  --primary: oklch(0.72 0.15 240);
+  --primary-foreground: oklch(0.12 0.02 250);
+  --secondary: oklch(0.26 0.02 250);
+  --secondary-foreground: oklch(0.96 0.01 250);
+  --muted: oklch(0.24 0.02 250);
+  --muted-foreground: oklch(0.76 0.02 250);
+  --accent: oklch(0.72 0.15 160);
+  --accent-foreground: oklch(0.12 0.02 160);
+  --destructive: oklch(0.68 0.2 25);
+  --destructive-foreground: oklch(0.98 0.01 25);
+  --success: oklch(0.76 0.15 150);
+  --success-foreground: oklch(0.12 0.02 150);
+  --warning: oklch(0.85 0.16 85);
+  --warning-foreground: oklch(0.12 0.02 85);
+  --border: oklch(0.35 0.02 250);
+  --input: oklch(0.35 0.02 250);
+  --ring: oklch(0.72 0.15 240);
+  --shadow-deep: oklch(0.06 0.01 250);
+  --shadow-toy-val: 0 4px 14px -2px oklch(0 0 0 / 0.5);
+  --shadow-soft-val: 0 8px 26px -8px oklch(0 0 0 / 0.6);
+  --maze: oklch(0.72 0.15 240);
+  --spot: oklch(0.76 0.15 160);
+  --simon: oklch(0.74 0.16 290);
+  --detective: oklch(0.7 0.14 230);
+  --chart-1: oklch(0.72 0.15 240);
+  --chart-2: oklch(0.76 0.15 160);
+  --chart-3: oklch(0.74 0.16 290);
+  --chart-4: oklch(0.76 0.15 150);
+  --chart-5: oklch(0.7 0.14 230);
+}
+
+.high-contrast,
+:root[class~="high-contrast"],
+html.high-contrast {
+  --background: oklch(0.05 0 0); /* Pure deep black #050505 */
+  --foreground: oklch(1 0 0); /* Pure crisp white #ffffff */
+  --card: oklch(0.12 0 0); /* High-contrast elevated dark surface #141414 */
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0.12 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(0.88 0.18 85); /* High-visibility vivid luminous amber gold */
+  --primary-foreground: oklch(0 0 0); /* Crisp black text on primary */
+  --secondary: oklch(0.2 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.18 0 0);
+  --muted-foreground: oklch(0.92 0 0); /* Bright white-gray (12:1 contrast ratio) */
+  --accent: oklch(0.9 0.16 160); /* Luminous mint */
+  --accent-foreground: oklch(0 0 0);
+  --destructive: oklch(0.75 0.22 25); /* High-vis vivid red */
+  --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.9 0.18 145); /* Luminous green */
+  --success-foreground: oklch(0 0 0);
+  --warning: oklch(0.92 0.18 85); /* Ultra-visible gold */
+  --warning-foreground: oklch(0 0 0);
+  --border: oklch(0.92 0 0); /* Bold pure light border (maximum boundary clarity) */
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.88 0.18 85);
+  --shadow-deep: oklch(0 0 0);
+  --shadow-toy-val: 0 0 0 2px oklch(0.92 0 0);
+  --shadow-soft-val: 0 0 0 2px oklch(0.92 0 0);
+  --maze: oklch(0.88 0.18 85);
+  --spot: oklch(0.9 0.16 160);
+  --simon: oklch(0.88 0.18 300);
+  --detective: oklch(0.85 0.16 230);
+  --chart-1: oklch(0.88 0.18 85);
+  --chart-2: oklch(0.9 0.16 160);
+  --chart-3: oklch(0.88 0.18 300);
+  --chart-4: oklch(0.9 0.18 145);
+  --chart-5: oklch(0.85 0.16 230);
 }
 
 @layer base {
@@ -107,13 +176,11 @@
 
   body {
     background-color: var(--color-background);
-    background-image:
-      radial-gradient(circle at 12% 8%, oklch(0.62 0.16 195 / 0.12), transparent 45%),
-      radial-gradient(circle at 88% 0%, oklch(0.74 0.17 45 / 0.13), transparent 42%),
-      radial-gradient(circle at 50% 110%, oklch(0.62 0.19 300 / 0.1), transparent 45%);
-    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-size: 1.125rem; /* 18px base font for senior readability */
+    line-height: 1.6;
+    transition: background-color 200ms ease, color 200ms ease;
   }
 
   h1,
@@ -122,6 +189,7 @@
   h4 {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
+    font-weight: 700;
   }
 }
 
@@ -130,21 +198,46 @@
   border: 2px solid var(--color-border);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-soft);
+  color: var(--color-card-foreground);
 }
 
 @utility toy-press {
   transition:
     transform 120ms ease,
-    box-shadow 120ms ease;
+    box-shadow 120ms ease,
+    background-color 120ms ease,
+    border-color 120ms ease;
   &:active {
-    transform: translateY(3px);
+    transform: translateY(2px);
   }
+}
+
+@utility font-scale-lg {
+  font-size: 1.25rem;
+  line-height: 1.7;
+}
+
+@utility font-scale-xl {
+  font-size: 1.375rem;
+  line-height: 1.8;
+}
+
+/* ---------- Root-level font scaling for accessibility ---------- */
+/* Applied to html element so all rem-based sizes scale proportionally */
+html.font-size-medium {
+  font-size: 16px;
+}
+html.font-size-large {
+  font-size: 19px;
+}
+html.font-size-extra-large {
+  font-size: 22px;
 }
 
 @keyframes pop-in {
   from {
     opacity: 0;
-    transform: scale(0.94) translateY(8px);
+    transform: scale(0.98) translateY(4px);
   }
   to {
     opacity: 1;
@@ -153,5 +246,46 @@
 }
 
 @utility animate-pop {
-  animation: pop-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: pop-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* ---------- High-contrast Accessibility Overrides ---------- */
+.high-contrast,
+:root[class~="high-contrast"] {
+  color-scheme: dark;
+}
+
+.high-contrast .panel,
+:root[class~="high-contrast"] .panel {
+  border: 2.5px solid var(--color-border);
+  box-shadow: 0 0 0 1px oklch(1 0 0 / 0.25);
+}
+
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea,
+:root[class~="high-contrast"] input,
+:root[class~="high-contrast"] select,
+:root[class~="high-contrast"] textarea {
+  border: 2px solid var(--color-border) !important;
+  color: var(--color-foreground) !important;
+  background-color: var(--color-card) !important;
+}
+
+.high-contrast button:focus-visible,
+.high-contrast a:focus-visible,
+.high-contrast input:focus-visible,
+:root[class~="high-contrast"] button:focus-visible,
+:root[class~="high-contrast"] a:focus-visible,
+:root[class~="high-contrast"] input:focus-visible {
+  outline: 3px solid var(--color-ring) !important;
+  outline-offset: 3px;
+}
+
+.high-contrast img,
+:root[class~="high-contrast"] img {
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.35));
+}
+
+
+

@@ -238,7 +238,7 @@ function SignUpPage() {
               placeholder="e.g. Maya Lin"
               aria-invalid={!!fullNameError}
               aria-describedby={fullNameError ? "fullname-error" : undefined}
-              className={`w-full rounded-xl border-2 bg-background px-4 py-2.5 sm:py-3 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
+              className={`w-full rounded-xl border-2 bg-card text-foreground px-4 py-2.5 sm:py-3 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
                 fullNameError
                   ? "border-destructive focus:border-destructive"
                   : "border-border focus:border-primary"
@@ -275,7 +275,7 @@ function SignUpPage() {
               aria-describedby={
                 identifierError ? "identifier-error" : undefined
               }
-              className={`w-full rounded-xl border-2 bg-background px-4 py-2.5 sm:py-3 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
+              className={`w-full rounded-xl border-2 bg-card text-foreground px-4 py-2.5 sm:py-3 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
                 identifierError
                   ? "border-destructive focus:border-destructive"
                   : "border-border focus:border-primary"
@@ -311,7 +311,7 @@ function SignUpPage() {
                 placeholder="••••••••"
                 aria-invalid={!!passwordError}
                 aria-describedby={passwordError ? "password-error" : undefined}
-                className={`w-full rounded-xl border-2 bg-background px-4 py-2.5 sm:py-3 pr-12 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
+                className={`w-full rounded-xl border-2 bg-card text-foreground px-4 py-2.5 sm:py-3 pr-12 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
                   passwordError
                     ? "border-destructive focus:border-destructive"
                     : "border-border focus:border-primary"
@@ -358,9 +358,9 @@ function SignUpPage() {
                 placeholder="••••••••"
                 aria-invalid={!!confirmPasswordError}
                 aria-describedby={
-                  confirmPasswordError ? "confirm-password-error" : undefined
+                  confirmPasswordError ? "confirmpassword-error" : undefined
                 }
-                className={`w-full rounded-xl border-2 bg-background px-4 py-2.5 sm:py-3 pr-12 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
+                className={`w-full rounded-xl border-2 bg-card text-foreground px-4 py-2.5 sm:py-3 pr-12 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
                   confirmPasswordError
                     ? "border-destructive focus:border-destructive"
                     : "border-border focus:border-primary"

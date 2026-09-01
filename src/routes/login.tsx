@@ -1,296 +1,201 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
+import { auth, googleProvider } from "@/lib/firebase";
 import { useProfile } from "@/lib/intelliplay/store";
 import logoImg from "@/assets/logo.png";
-import foxImg from "@/assets/char-fox.png";
-import catImg from "@/assets/char-cat.png";
-import monkeyImg from "@/assets/char-monkey.png";
-import breadImg from "@/assets/char-bread.png";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Login — MindWeave" },
-      {
-        name: "description",
-        content: "Sign in to your MindWeave adaptive cognitive gaming account.",
-      },
+      { title: "Sign In — MindWeave" },
+      { name: "description", content: "Sign in or create an account to start playing MindWeave." },
     ],
   }),
   component: LoginPage,
 });
 
+const FIREBASE_ERRORS: Record<string, string> = {
+  "auth/invalid-credential": "Incorrect email or password.",
+  "auth/user-not-found": "No account with that email. Try creating one!",
+  "auth/wrong-password": "Incorrect password. Please try again.",
+  "auth/email-already-in-use": "An account with this email already exists. Try signing in.",
+  "auth/weak-password": "Password must be at least 6 characters.",
+  "auth/invalid-email": "Please enter a valid email address.",
+  "auth/popup-closed-by-user": "Sign-in popup was closed. Please try again.",
+  "auth/too-many-requests": "Too many attempts. Please wait a moment and try again.",
+  "auth/operation-not-allowed": "Email/Password sign-in is not enabled in Firebase Console yet.",
+  "auth/configuration-not-found": "Authentication service is not set up in Firebase Console yet.",
+  "auth/network-request-failed": "Network error. Check your connection and try again.",
+};
+
+function friendlyError(code: string) {
+  return FIREBASE_ERRORS[code] ?? "Something went wrong. Please try again.";
+}
+
 function LoginPage() {
-  const { login } = useProfile();
   const navigate = useNavigate();
-  const [identifier, setIdentifier] = useState("");
+  const { user, ready } = useProfile();
+  const [tab, setTab] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [touched, setTouched] = useState<{
-    identifier?: boolean;
-    password?: boolean;
-  }>({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginSuccess, setLoginSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Client-side validation checks
-  const identifierError =
-    touched.identifier && !identifier.trim()
-      ? "Please enter your username or email"
-      : "";
+  const goHome = () => navigate({ to: "/" });
 
-  const passwordError =
-    touched.password && !password
-      ? "Please enter your password"
-      : touched.password && password.length < 6
-        ? "Password must be at least 6 characters"
-        : "";
-
-  const isFormValid = identifier.trim().length > 0 && password.length >= 6;
-
-  const handleIdentifierChange = (val: string) => {
-    setIdentifier(val);
-    if (loginSuccess) setLoginSuccess(false);
-    if (!touched.identifier) setTouched((t) => ({ ...t, identifier: true }));
-  };
-
-  const handlePasswordChange = (val: string) => {
-    setPassword(val);
-    if (loginSuccess) setLoginSuccess(false);
-    if (!touched.password) setTouched((t) => ({ ...t, password: true }));
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setTouched({ identifier: true, password: true });
-
-    if (!isFormValid) {
-      return;
+  useEffect(() => {
+    if (ready && user) {
+      goHome();
     }
+  }, [ready, user]);
 
-    setIsLoading(true);
-
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
     try {
-      // NOTE: Frontend scaffold. Backend authentication API integration will connect here.
-      console.log("Login submitted with:", {
-        identifier: identifier.trim(),
-        password,
-      });
-
-      // Simulate brief network feedback
-      await new Promise((resolve) => setTimeout(resolve, 400));
-
-      login(identifier.trim());
-      setLoginSuccess(true);
-      navigate({ to: "/" });
-    } catch (err) {
-      setLoginSuccess(false);
+      if (tab === "signin") {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+      goHome();
+    } catch (err: any) {
+      setError(friendlyError(err.code ?? ""));
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInWithPopup(auth, googleProvider);
+      goHome();
+    } catch (err: any) {
+      setError(friendlyError(err.code ?? ""));
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background px-4 py-8 select-none">
-      {/* Soft playful ambient background glow */}
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,oklch(0.62_0.16_195/0.08),transparent_50%),radial-gradient(circle_at_80%_80%,oklch(0.62_0.19_300/0.08),transparent_50%)]"
-        aria-hidden="true"
-      />
-
-      {/* Decorative Peeking Animal Characters */}
-      {/* Top-Left: Fox */}
-      <img
-        src={foxImg}
-        alt=""
-        aria-hidden
-        width={160}
-        height={160}
-        className="pointer-events-none absolute -top-4 -left-4 hidden w-28 sm:w-36 rotate-12 drop-shadow-md lg:block opacity-90"
-      />
-      {/* Top-Right: Cat */}
-      <img
-        src={catImg}
-        alt=""
-        aria-hidden
-        width={160}
-        height={160}
-        className="pointer-events-none absolute -top-4 -right-4 hidden w-28 sm:w-36 -rotate-12 drop-shadow-md lg:block opacity-90"
-      />
-      {/* Bottom-Left: Monkey */}
-      <img
-        src={monkeyImg}
-        alt=""
-        aria-hidden
-        width={160}
-        height={160}
-        className="pointer-events-none absolute -bottom-4 -left-4 hidden w-28 sm:w-36 -rotate-12 drop-shadow-md lg:block opacity-90"
-      />
-      {/* Bottom-Right: Bread */}
-      <img
-        src={breadImg}
-        alt=""
-        aria-hidden
-        width={160}
-        height={160}
-        className="pointer-events-none absolute -bottom-4 -right-4 hidden w-28 sm:w-36 rotate-12 drop-shadow-md lg:block opacity-90"
-      />
-
-      {/* Main Centered Login Card */}
-      <div className="panel animate-pop relative z-10 w-full max-w-md p-6 sm:p-8 shadow-soft border-2 border-border">
-        {/* Logo / Branding */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <Link
-            to="/"
-            className="inline-block transition-transform hover:scale-105"
-            aria-label="Go to MindWeave Home"
-          >
-            <img
-              src={logoImg}
-              alt="MindWeave"
-              className="h-14 sm:h-16 w-auto object-contain drop-shadow-sm"
-              width={200}
-              height={70}
-              loading="eager"
-            />
-          </Link>
-          <h1 className="mt-4 font-display text-2xl sm:text-3xl font-bold text-foreground">
-            Welcome Back! 👋
-          </h1>
-          <p className="mt-1 text-xs sm:text-sm text-muted-foreground font-semibold">
-            Sign in to continue your MindWeave journey.
-          </p>
+    <div className="flex min-h-screen items-center justify-center bg-background text-foreground px-4 py-12">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="mb-8 flex justify-center">
+          <img
+            src={logoImg}
+            alt="MindWeave"
+            className="h-auto w-36 object-contain drop-shadow-sm"
+            width={144}
+            height={81}
+          />
         </div>
 
-        {/* Success Alert: Rendered ONLY when loginSuccess is true */}
-        {loginSuccess ? (
-          <div
-            className="mb-5 rounded-xl border-2 border-success/40 bg-success/15 p-3 text-xs sm:text-sm font-semibold text-foreground animate-pop"
-            role="alert"
-          >
-            ✅ Login submitted successfully! Backend authentication will connect
-            here.
-          </div>
-        ) : null}
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          {/* Email / Username Field */}
-          <div>
-            <label
-              htmlFor="identifier"
-              className="block text-xs sm:text-sm font-bold text-foreground mb-1.5"
-            >
-              Email or Username
-            </label>
-            <input
-              id="identifier"
-              name="identifier"
-              type="text"
-              autoComplete="username"
-              value={identifier}
-              onChange={(e) => handleIdentifierChange(e.target.value)}
-              onBlur={() => setTouched((t) => ({ ...t, identifier: true }))}
-              placeholder="e.g. player@mindweave.app"
-              aria-invalid={!!identifierError}
-              aria-describedby={
-                identifierError ? "identifier-error" : undefined
-              }
-              className={`w-full rounded-xl border-2 bg-background px-4 py-2.5 sm:py-3 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
-                identifierError
-                  ? "border-destructive focus:border-destructive"
-                  : "border-border focus:border-primary"
-              }`}
-            />
-            {identifierError ? (
-              <p
-                id="identifier-error"
-                className="mt-1 text-xs font-semibold text-destructive"
-              >
-                {identifierError}
-              </p>
-            ) : null}
-          </div>
-
-          {/* Password Field */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label
-                htmlFor="password"
-                className="text-xs sm:text-sm font-bold text-foreground"
-              >
-                Password
-              </label>
-              <button
-                type="button"
-                onClick={() =>
-                  alert(
-                    "Password reset will be connected with backend authentication.",
-                  )
-                }
-                className="text-xs font-bold text-primary hover:underline transition-all"
-              >
-                Forgot password?
-              </button>
-            </div>
-            <div className="relative">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => handlePasswordChange(e.target.value)}
-                onBlur={() => setTouched((t) => ({ ...t, password: true }))}
-                placeholder="••••••••"
-                aria-invalid={!!passwordError}
-                aria-describedby={passwordError ? "password-error" : undefined}
-                className={`w-full rounded-xl border-2 bg-background px-4 py-2.5 sm:py-3 pr-12 text-sm font-semibold outline-none transition-colors placeholder:text-muted-foreground/60 ${
-                  passwordError
-                    ? "border-destructive focus:border-destructive"
-                    : "border-border focus:border-primary"
-                }`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((s) => !s)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? "🙈" : "👁️"}
-              </button>
-            </div>
-            {passwordError ? (
-              <p
-                id="password-error"
-                className="mt-1 text-xs font-semibold text-destructive"
-              >
-                {passwordError}
-              </p>
-            ) : null}
-          </div>
-
-          {/* Login Submit Button */}
-          <div className="pt-2">
+        <div className="panel space-y-6 p-8">
+          {/* Tabs */}
+          <div className="flex rounded-2xl bg-muted p-1 text-sm font-bold border border-border/40">
             <button
-              type="submit"
-              disabled={isLoading}
-              className="toy-press w-full rounded-full bg-primary py-3 sm:py-3.5 font-display text-base sm:text-lg font-bold text-primary-foreground shadow-toy transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              onClick={() => { setTab("signin"); setError(null); }}
+              className={`flex-1 rounded-xl py-2 transition-colors ${
+                tab === "signin"
+                  ? "bg-card shadow-soft text-foreground border border-border/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              {isLoading ? "Signing in…" : "Login"}
+              Sign in
+            </button>
+            <button
+              onClick={() => { setTab("signup"); setError(null); }}
+              className={`flex-1 rounded-xl py-2 transition-colors ${
+                tab === "signup"
+                  ? "bg-card shadow-soft text-foreground border border-border/50"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Create account
             </button>
           </div>
-        </form>
 
-        {/* Sign Up Link */}
-        <div className="mt-6 text-center text-xs sm:text-sm font-semibold text-muted-foreground border-t border-border/60 pt-4">
-          Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="font-bold text-primary hover:underline transition-colors"
+          <h1 className="font-display text-2xl font-bold text-foreground">
+            {tab === "signin" ? "Caregiver Sign In 👋" : "Caregiver Registration 🧠"}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Sign in to manage patient profiles, memory flashcards, and daily routine schedules.
+          </p>
+
+          {/* Error */}
+          {error && (
+            <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm font-semibold text-destructive border border-destructive/20">
+              {error}
+            </div>
+          )}
+
+          {/* Email / Password form */}
+          <form onSubmit={handleEmailAuth} className="space-y-4">
+            <label className="block text-sm font-bold text-foreground">
+              Email
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                required
+                disabled={loading}
+                className="mt-1 w-full rounded-xl border-2 border-border bg-card text-foreground px-4 py-3 text-base font-semibold outline-none focus:border-primary disabled:opacity-50"
+              />
+            </label>
+            <label className="block text-sm font-bold text-foreground">
+              Password
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={tab === "signup" ? "At least 6 characters" : "Your password"}
+                required
+                disabled={loading}
+                className="mt-1 w-full rounded-xl border-2 border-border bg-card text-foreground px-4 py-3 text-base font-semibold outline-none focus:border-primary disabled:opacity-50"
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="toy-press w-full rounded-full bg-primary px-6 py-4 font-display text-xl font-bold text-primary-foreground shadow-toy disabled:opacity-60 cursor-pointer"
+            >
+              {loading ? "Please wait…" : tab === "signin" ? "Sign in" : "Create account"}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 text-xs font-bold text-muted-foreground">
+            <div className="flex-1 border-t border-border" />
+            or
+            <div className="flex-1 border-t border-border" />
+          </div>
+
+          {/* Google */}
+          <button
+            onClick={handleGoogle}
+            disabled={loading}
+            className="toy-press flex w-full items-center justify-center gap-3 rounded-full border-2 border-border bg-card px-6 py-3 font-display text-base font-bold shadow-soft disabled:opacity-60"
           >
-            Sign up
-          </Link>
+            {/* Google G SVG */}
+            <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden>
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            Continue with Google
+          </button>
         </div>
       </div>
     </div>

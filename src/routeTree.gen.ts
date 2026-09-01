@@ -11,12 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BonusRouteImport } from './routes/bonus'
+import { Route as CaregiverRouteImport } from './routes/caregiver'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as MemoriesRouteImport } from './routes/memories'
 import { Route as ParentRouteImport } from './routes/parent'
+import { Route as RemindersRouteImport } from './routes/reminders'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as PlayDetectiveRouteImport } from './routes/play.detective'
 import { Route as PlayMazeRouteImport } from './routes/play.maze'
+import { Route as PlayMemoryRouteImport } from './routes/play.memory'
+import { Route as PlayOrientationRouteImport } from './routes/play.orientation'
+import { Route as PlaySequencingRouteImport } from './routes/play.sequencing'
 import { Route as PlaySimonRouteImport } from './routes/play.simon'
 import { Route as PlaySpotRouteImport } from './routes/play.spot'
 
@@ -30,6 +36,11 @@ const BonusRoute = BonusRouteImport.update({
   path: '/bonus',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CaregiverRoute = CaregiverRouteImport.update({
+  id: '/caregiver',
+  path: '/caregiver',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -40,9 +51,19 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MemoriesRoute = MemoriesRouteImport.update({
+  id: '/memories',
+  path: '/memories',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ParentRoute = ParentRouteImport.update({
   id: '/parent',
   path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RemindersRoute = RemindersRouteImport.update({
+  id: '/reminders',
+  path: '/reminders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -60,6 +81,21 @@ const PlayMazeRoute = PlayMazeRouteImport.update({
   path: '/play/maze',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlayMemoryRoute = PlayMemoryRouteImport.update({
+  id: '/play/memory',
+  path: '/play/memory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayOrientationRoute = PlayOrientationRouteImport.update({
+  id: '/play/orientation',
+  path: '/play/orientation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaySequencingRoute = PlaySequencingRouteImport.update({
+  id: '/play/sequencing',
+  path: '/play/sequencing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlaySimonRoute = PlaySimonRouteImport.update({
   id: '/play/simon',
   path: '/play/simon',
@@ -74,24 +110,36 @@ const PlaySpotRoute = PlaySpotRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bonus': typeof BonusRoute
+  '/caregiver': typeof CaregiverRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/memories': typeof MemoriesRoute
   '/parent': typeof ParentRoute
+  '/reminders': typeof RemindersRoute
   '/signup': typeof SignupRoute
   '/play/detective': typeof PlayDetectiveRoute
   '/play/maze': typeof PlayMazeRoute
+  '/play/memory': typeof PlayMemoryRoute
+  '/play/orientation': typeof PlayOrientationRoute
+  '/play/sequencing': typeof PlaySequencingRoute
   '/play/simon': typeof PlaySimonRoute
   '/play/spot': typeof PlaySpotRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bonus': typeof BonusRoute
+  '/caregiver': typeof CaregiverRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/memories': typeof MemoriesRoute
   '/parent': typeof ParentRoute
+  '/reminders': typeof RemindersRoute
   '/signup': typeof SignupRoute
   '/play/detective': typeof PlayDetectiveRoute
   '/play/maze': typeof PlayMazeRoute
+  '/play/memory': typeof PlayMemoryRoute
+  '/play/orientation': typeof PlayOrientationRoute
+  '/play/sequencing': typeof PlaySequencingRoute
   '/play/simon': typeof PlaySimonRoute
   '/play/spot': typeof PlaySpotRoute
 }
@@ -99,12 +147,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/bonus': typeof BonusRoute
+  '/caregiver': typeof CaregiverRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
+  '/memories': typeof MemoriesRoute
   '/parent': typeof ParentRoute
+  '/reminders': typeof RemindersRoute
   '/signup': typeof SignupRoute
   '/play/detective': typeof PlayDetectiveRoute
   '/play/maze': typeof PlayMazeRoute
+  '/play/memory': typeof PlayMemoryRoute
+  '/play/orientation': typeof PlayOrientationRoute
+  '/play/sequencing': typeof PlaySequencingRoute
   '/play/simon': typeof PlaySimonRoute
   '/play/spot': typeof PlaySpotRoute
 }
@@ -113,36 +167,54 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/bonus'
+    | '/caregiver'
     | '/dashboard'
     | '/login'
+    | '/memories'
     | '/parent'
+    | '/reminders'
     | '/signup'
     | '/play/detective'
     | '/play/maze'
+    | '/play/memory'
+    | '/play/orientation'
+    | '/play/sequencing'
     | '/play/simon'
     | '/play/spot'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/bonus'
+    | '/caregiver'
     | '/dashboard'
     | '/login'
+    | '/memories'
     | '/parent'
+    | '/reminders'
     | '/signup'
     | '/play/detective'
     | '/play/maze'
+    | '/play/memory'
+    | '/play/orientation'
+    | '/play/sequencing'
     | '/play/simon'
     | '/play/spot'
   id:
     | '__root__'
     | '/'
     | '/bonus'
+    | '/caregiver'
     | '/dashboard'
     | '/login'
+    | '/memories'
     | '/parent'
+    | '/reminders'
     | '/signup'
     | '/play/detective'
     | '/play/maze'
+    | '/play/memory'
+    | '/play/orientation'
+    | '/play/sequencing'
     | '/play/simon'
     | '/play/spot'
   fileRoutesById: FileRoutesById
@@ -150,12 +222,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BonusRoute: typeof BonusRoute
+  CaregiverRoute: typeof CaregiverRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
+  MemoriesRoute: typeof MemoriesRoute
   ParentRoute: typeof ParentRoute
+  RemindersRoute: typeof RemindersRoute
   SignupRoute: typeof SignupRoute
   PlayDetectiveRoute: typeof PlayDetectiveRoute
   PlayMazeRoute: typeof PlayMazeRoute
+  PlayMemoryRoute: typeof PlayMemoryRoute
+  PlayOrientationRoute: typeof PlayOrientationRoute
+  PlaySequencingRoute: typeof PlaySequencingRoute
   PlaySimonRoute: typeof PlaySimonRoute
   PlaySpotRoute: typeof PlaySpotRoute
 }
@@ -176,6 +254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BonusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/caregiver': {
+      id: '/caregiver'
+      path: '/caregiver'
+      fullPath: '/caregiver'
+      preLoaderRoute: typeof CaregiverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -190,11 +275,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/memories': {
+      id: '/memories'
+      path: '/memories'
+      fullPath: '/memories'
+      preLoaderRoute: typeof MemoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/parent': {
       id: '/parent'
       path: '/parent'
       fullPath: '/parent'
       preLoaderRoute: typeof ParentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reminders': {
+      id: '/reminders'
+      path: '/reminders'
+      fullPath: '/reminders'
+      preLoaderRoute: typeof RemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -218,6 +317,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayMazeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/play/memory': {
+      id: '/play/memory'
+      path: '/play/memory'
+      fullPath: '/play/memory'
+      preLoaderRoute: typeof PlayMemoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/orientation': {
+      id: '/play/orientation'
+      path: '/play/orientation'
+      fullPath: '/play/orientation'
+      preLoaderRoute: typeof PlayOrientationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/play/sequencing': {
+      id: '/play/sequencing'
+      path: '/play/sequencing'
+      fullPath: '/play/sequencing'
+      preLoaderRoute: typeof PlaySequencingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/play/simon': {
       id: '/play/simon'
       path: '/play/simon'
@@ -238,12 +358,18 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BonusRoute: BonusRoute,
+  CaregiverRoute: CaregiverRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
+  MemoriesRoute: MemoriesRoute,
   ParentRoute: ParentRoute,
+  RemindersRoute: RemindersRoute,
   SignupRoute: SignupRoute,
   PlayDetectiveRoute: PlayDetectiveRoute,
   PlayMazeRoute: PlayMazeRoute,
+  PlayMemoryRoute: PlayMemoryRoute,
+  PlayOrientationRoute: PlayOrientationRoute,
+  PlaySequencingRoute: PlaySequencingRoute,
   PlaySimonRoute: PlaySimonRoute,
   PlaySpotRoute: PlaySpotRoute,
 }
